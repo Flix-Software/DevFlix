@@ -1,6 +1,5 @@
 const cors = require("cors");
 const express = require("express");
-const bodyParser = require("body-parser");
 const app = express();
 
 global.__basedir = __dirname;
@@ -11,14 +10,7 @@ var corsOptions = {
 
 app.use(cors(corsOptions));
 
-// parse requests of content-type - application/json
-app.use(bodyParser.json());
-
-// parse requests of content-type - application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: true }));
-
-// database connection
-const db = require("./app/models");
+const db = require("./src/model");
 db.mongoose
   .connect(db.url, {
     useNewUrlParser: true,
@@ -30,15 +22,15 @@ db.mongoose
   .catch(err => {
     console.log("Cannot connect to the database!", err);
     process.exit();
-  });
-
-// simple route
-app.get("/", (req, res) => {
-  res.json({ message: "It's DevFlix App." });
 });
 
-// set port, listen for requests
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}.`);
+const initRoutes = require("./src/routes");
+
+app.use(express.urlencoded({ extended: true }));
+initRoutes(app);
+require("./src/routes/tutorial.route")(app);
+
+let port = 8080;
+app.listen(port, () => {
+  console.log(`Running at localhost:${port}`);
 });
